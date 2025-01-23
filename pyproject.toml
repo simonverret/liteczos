@@ -12,6 +12,9 @@ dependencies = [
   "pytest",
 ]
 
+[project.scripts]  # Optional
+liteczos_cli = "liteczos.lanczos:main"
+
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"

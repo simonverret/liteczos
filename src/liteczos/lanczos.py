@@ -21,3 +21,13 @@ def maxc_hamiltonian(t, U):
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,2*U],
     ])
 
+
+
+def main():
+    H = maxc_hamiltonian(1,8)
+    print("problem:")
+    print(H)
+
+    print()
+    print("solution")
+    # print(ground_state(H))
