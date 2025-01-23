@@ -1,0 +1,17 @@
+# see the pypa official example: https://github.com/pypa/sampleproject/tree/main
+
+[project]
+name = "liteczos"
+version = "0.0.0"
+authors = [
+  {name = "Simon Verret", email = "verret.simon@gmail.com" },
+]
+requires-python = ">=3.12"
+dependencies = [
+  "numpy",
+  "pytest",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
