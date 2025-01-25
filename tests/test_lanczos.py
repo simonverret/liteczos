@@ -1,5 +1,5 @@
 import pytest
-from liteczos.lanczos import maxc_hamiltonian
+from liteczos.lanczos import maxc_hamiltonian, get_ground_state
 
 @pytest.fixture(
     name="U",
@@ -21,4 +21,6 @@ def test_maxc_hamiltonian(U, t):
     H = maxc_hamiltonian(U,t)
     assert H.shape == (16,16)
 
-    
+def test_ground_state(U, t):
+    H = maxc_hamiltonian(U, t)
+    E0 = get_ground_state(H)
