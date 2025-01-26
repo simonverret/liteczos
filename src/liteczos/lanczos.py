@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import pi
-from scipy.linalg import eigh_tridiagonal, eigvalsh_tridiagonal
+from scipy.linalg import eigh_tridiagonal, eigvalsh_tridiagonal, eigvalsh
 
 
 def maxc_hamiltonian(t, U):
@@ -24,45 +24,66 @@ def maxc_hamiltonian(t, U):
     ])
 
 
-def get_ground_state(H, max_iter=20, tol=1e-9):
+def get_ground_state(H, max_iter=100, tol=1e-9):
     dim = len(H)
+    max_iter = min(max_iter, dim)
 
-    phi = np.random.randn(dim)
-    prev_phi = np.zeros_like(phi)
-    prev_phi_phi = 1
-    e = 1e10
-    
     a_list = np.zeros(max_iter)
     b_list = np.zeros(max_iter)
+    
+    #n=0
+    phi = np.random.uniform(-1,1, dim)
+    prev_phi = np.zeros_like(phi)
 
-    for n in range(max_iter):
+    H_phi = H@phi
+    phi_phi = phi@phi
+    a = phi@H_phi / phi_phi
+    b_square = 0
+    
+    a_list[0] = a
+    b_list[0] = np.sqrt(b_square)
+
+    for n in range(1, max_iter):
+        new_phi = H_phi - a*phi - b_square*prev_phi
+        prev_phi = phi
+        phi = new_phi
+        prev_phi_phi = phi_phi
+
         H_phi = H@phi
         phi_phi = phi@phi
         a = phi@H_phi / phi_phi
-        b = phi_phi / prev_phi_phi
-        
-        next_phi = H_phi - a*phi - b*prev_phi
-        
-        prev_phi = phi
-        phi = next_phi
-        prev_phi_phi = phi_phi
+        b_square = phi_phi / prev_phi_phi
 
         a_list[n] = a
-        b_list[n] = b
+        b_list[n] = np.sqrt(b_square)
 
-        if n > 1:
-            prev_e = e
-            e = eigvalsh_tridiagonal(a_list[:n], b_list[1:n]).min()  #first b is not in the matrix
-            if b < tol or np.allclose(e, prev_e, atol=tol):
-                return e
+        e = min(eigvalsh_tridiagonal(a_list[:n], b_list[1:n]))
+    
+    return e
         
 
 def main():
-    H = maxc_hamiltonian(1,8)
-    print("problem:")
-    print(H)
-
-    print()
-    print("solution")
-    print(get_ground_state(H, max_iter=16))
-    # print(ground_state(H))
+    from matplotlib import pyplot as plt
+    t = 1
+    U_list = np.linspace(-8,8, 50)
+    L_list = np.zeros_like(U_list)
+    E_list = np.zeros_like(U_list)
+    N_list = np.zeros_like(U_list)
+    for i, U in enumerate(U_list):
+        H = maxc_hamiltonian(t,U)
+        L_list[i] = get_ground_state(H)
+        N_list[i] = min(eigvalsh(H))
+        E_list[i] = min(
+            0,
+            U,
+            t,
+            U+t, 
+            U-t,
+            (U+np.sqrt(16*t**2 + U**2))/2,
+            (U-np.sqrt(16*t**2 + U**2))/2
+        )
+    
+    plt.plot(U_list, E_list)
+    plt.plot(U_list, L_list)
+    plt.plot(U_list, N_list)
+    plt.show()
