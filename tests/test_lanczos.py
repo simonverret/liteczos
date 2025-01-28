@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.linalg import eigvals
+from scipy.linalg import eigh           
 import pytest
 from liteczos.lanczos import maxc_hamiltonian, get_ground_state
 
@@ -19,12 +19,19 @@ def Uval(request):
 def t(request):
     return request.param
 
-def test_maxc_hamiltonian(U, t):
-    H = maxc_hamiltonian(U,t)
+def test_maxc_hamiltonian(t, U):
+    H = maxc_hamiltonian(t, U)
     assert H.shape == (16,16)
 
-def test_ground_state(U, t):
-    H = maxc_hamiltonian(U, t)
-    E0 = get_ground_state(H)
-    expected = min(eigvals(H))
-    assert np.allclose(E0, expected)
+def test_ground_state(t, U):
+    H = maxc_hamiltonian(t, U)
+    
+    eigvals, eigvecs = eigh(H)
+    gs_index = eigvals.argmin() 
+    expected_e0 = eigvals[gs_index]
+    expected_v0 = eigvecs[:,gs_index]
+
+    e0, v0 = get_ground_state(H)
+    
+    assert np.allclose(e0, expected_e0)
+    assert np.allclose(v0, expected_v0, atol=1e-5)
