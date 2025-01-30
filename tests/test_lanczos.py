@@ -2,6 +2,8 @@ import numpy as np
 from scipy.linalg import eig   
 import pytest
 from liteczos.lanczos import get_ground_state, get_green_function
+import liteczos.charlebois as chrlbs
+from test_charlebois import mu_half_filled, U, t
 
 H2x2 = np.array(
     [[-0.09632342, -0.93660398],
@@ -72,6 +74,17 @@ def test_ground_state_vector(H):
     expected_v0 = eigvecs[:, eigvals.argmin()]
     e0, v0 = get_ground_state(H)    
     assert np.allclose(v0, expected_v0) or np.allclose(v0, -expected_v0)
+
+
+def test_ground_state_charlebois(mu_half_filled, t, U):
+    H = chrlbs.hamiltonian(t, U) - mu_half_filled*chrlbs.number()
+    expected_e0 = chrlbs.ground_state_energy(t, U) - mu_half_filled*2
+
+    e0, v0 = get_ground_state(H)
+
+    assert np.allclose(e0, expected_e0)
+    assert np.allclose(H@v0/expected_e0, v0)
+
 
 def test_green_function(omega, eta, mu):
     expected_green = lambda omega, eta, mu: 1/(omega + 1j*eta - mu)

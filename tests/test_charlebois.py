@@ -21,24 +21,26 @@ def U(request):
     return request.param
 
 
+@pytest.fixture
+def mu_half_filled(U):
+    return U/2
+
+
 def test_hamiltonian(t, U):
     H = hamiltonian(t, U)
     assert H.shape == (16,16)
 
-
-def test_ground_state_energy(t, U):
-    mu = U/2  # half filling
-    H = hamiltonian(t, U) - mu*number()
+def test_ground_state_energy(mu_half_filled, t, U):
+    H = hamiltonian(t, U) - mu_half_filled*number()
 
     
     expected_e0 = eigvalsh(H).min()
-    e0 = ground_state_energy(t, U) - mu*2
+    e0 = ground_state_energy(t, U) - mu_half_filled*2
     assert np.allclose(e0, expected_e0)
 
 
-def test_ground_state_vector(t, U):
-    mu = U/2  # half filling
-    H = hamiltonian(t, U) - mu*number()
+def test_ground_state_vector(mu_half_filled, t, U):
+    H = hamiltonian(t, U) - mu_half_filled*number()
 
     ## The following fails because of degenerancy:
     # eigvals, eigvecs = eigh(H)
