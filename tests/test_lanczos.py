@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.linalg import eig   
 import pytest
-from liteczos.lanczos import get_ground_state
+from liteczos.lanczos import get_ground_state, get_green_function
 
 H2x2 = np.array(
     [[-0.09632342, -0.93660398],
@@ -35,14 +35,46 @@ H16x16 = np.array([
 def H(request):
     return request.param
 
+@pytest.fixture(
+    name="omega",
+    params=[0, np.linspace(0, .1, 4)],
+    ids=["1_w", "n_w"]
+)
+def omega(request):
+    return request.param
+
+@pytest.fixture(
+    name="eta",
+    params=[.1, np.linspace(.1, .3, 4)],
+    ids=["1_eta", "n_eta"]
+)
+def eta(request):
+    return request.param
+
+@pytest.fixture(
+    name="mu",
+    params=[0, np.linspace(0, .1, 4)],
+    ids=["1_mu", "n_mu"]
+)
+def mu(request):
+    return request.param
+
+
 def test_ground_state_energy(H):
     eigvals, eigvecs = eig(H)
     expected_e0 = eigvals.min() 
     e0, v0 = get_ground_state(H)    
     assert np.allclose(e0, expected_e0)
 
+
 def test_ground_state_vector(H):
     eigvals, eigvecs = eig(H)
     expected_v0 = eigvecs[:, eigvals.argmin()]
     e0, v0 = get_ground_state(H)    
     assert np.allclose(v0, expected_v0) or np.allclose(v0, -expected_v0)
+
+
+def test_green_function(omega, eta, mu):
+    expected_green = lambda omega, eta, mu: 1/(omega + 1j*eta - mu)
+    green = get_green_function()
+    assert np.allclose(green(omega, eta, mu), expected_green(omega, eta, mu))

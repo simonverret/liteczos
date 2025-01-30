@@ -9,7 +9,7 @@ def get_ground_state(H, max_iter=100, tol=1e-9):
     dim = len(H)
     a_list = np.zeros(max_iter)
     b_list = np.zeros(max_iter)
-    normalized_phi_list = np.zeros(shape=(max_iter, dim))  # to store 
+    normalized_phi_list = np.zeros(shape=(max_iter, dim))
     
     # initialization
     phi = np.random.uniform(-1,1, dim)
@@ -54,3 +54,8 @@ def get_ground_state(H, max_iter=100, tol=1e-9):
     v0 = phi_v0@normalized_phi_list[:n]
     v0 = v0 / np.sqrt(v0@v0)
     return e0, v0
+
+
+def get_green_function():
+    green = lambda omega, eta, mu: 1/(omega + 1j*eta - mu)
+    return green
