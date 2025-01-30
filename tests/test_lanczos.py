@@ -73,7 +73,6 @@ def test_ground_state_vector(H):
     e0, v0 = get_ground_state(H)    
     assert np.allclose(v0, expected_v0) or np.allclose(v0, -expected_v0)
 
-
 def test_green_function(omega, eta, mu):
     expected_green = lambda omega, eta, mu: 1/(omega + 1j*eta - mu)
     green = get_green_function()
