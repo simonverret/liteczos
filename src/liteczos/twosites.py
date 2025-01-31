@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def hamiltonian(t, U):
     return np.array([
         [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -50,9 +51,6 @@ def ground_state_vector(t, U):
     ## Work as well
     # lp = 0.5*(U + np.sqrt(16*t**2 + U**2))
     # return np.array([0, 0, 0, 0, 0, 2*t, lp, 0, 0, lp, 2*t, 0, 0, 0, 0, 0])
-    
     gs = ground_state_energy(t,U)
     norm = np.sqrt(2*(4*t**2 + gs**2))
     return np.array([0, 0, 0, 0, 0, -gs, 2*t, 0, 0, 2*t, -gs, 0, 0, 0, 0, 0])/norm
-
-    
