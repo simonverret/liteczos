@@ -83,7 +83,7 @@ def test_ground_state_vector(H):
     assert np.allclose(v0, expected_v0) or np.allclose(v0, -expected_v0)
 
 
-def test_ground_state_charlebois(mu_half, t, U):
+def test_ground_state_twosites(mu_half, t, U):
     H = twosites.hamiltonian(t, U) - mu_half*twosites.number()
     expected_e0 = twosites.ground_state_energy(t, U) - mu_half*2
     e0, v0 = get_ground_state(H)
