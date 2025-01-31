@@ -1,7 +1,13 @@
 import pytest
 import numpy as np
 from scipy.linalg import eigvalsh
-from liteczos.twosites import hamiltonian, number, ground_state_energy, ground_state_vector
+from liteczos.twosites import (
+    hamiltonian, 
+    number, 
+    ground_state_energy, 
+    ground_state_vector,
+    get_green_function,
+)
 
 
 @pytest.fixture(
@@ -44,3 +50,10 @@ def test_ground_state_vector(mu_half, t, U):
     expected_e0 = eigvalsh(H).min()    
     v0 = ground_state_vector(t, U)
     assert np.allclose((H@v0)/expected_e0, v0)
+
+
+def test_green_function(mu_half, t, U):
+    gf = get_green_function(mu_half, t, U)
+    assert callable(gf)
+    assert gf(0+0.01j).shape == (4,4)
+
