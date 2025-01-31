@@ -4,3 +4,4 @@ __pycache___
 *.egg-info
 .DS_Store
 *.cpython*
+.vscode

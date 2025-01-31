@@ -9,11 +9,12 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
   "numpy",
+  "scipy",
   "pytest",
 ]
 
-[project.scripts]  # Optional
-liteczos_cli = "liteczos.lanczos:main"
+# [project.scripts]  # Optional
+# liteczos_cli = "liteczos.lanczos:main"
 
 [build-system]
 requires = ["setuptools"]
