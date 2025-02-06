@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import pi
 from scipy.linalg import eigh_tridiagonal, eigh
+from liteczos import twosites
 
 LARGEST_FLOAT = np.finfo(np.float32).max
 
@@ -56,6 +57,47 @@ def get_ground_state(H, max_iter=100, tol=1e-9):
     return e0, v0
 
 
-def get_green_function():
-    green = lambda omega, eta, mu: 1/(omega + 1j*eta - mu)
+def get_green_function(H, max_iter=100, tol=1e-9):
+    # Containers for results
+    a_list = np.zeros(max_iter)
+    b_list = np.zeros(max_iter)
+    
+    # Initialization
+    e0, gs_vector = get_ground_state(H)
+    H = H-e0*np.eye(len(H))
+    cdag_gs = twosites.cdag1up()@gs_vector
+    b0 = np.sqrt(cdag_gs@cdag_gs)
+    phi = cdag_gs/b0
+    prev_phi = np.zeros_like(phi)
+    prev_phi_phi = 1
+
+    for n in range(0, max_iter):
+        # Compute relevant quantities
+        H_phi = H@phi
+        phi_phi = phi@phi
+        a = phi@H_phi / phi_phi
+        b_square = phi_phi / prev_phi_phi
+
+        # Accumulate tridiagonal hamiltonian
+        a_list[n] = a
+        b_list[n] = np.sqrt(b_square)
+
+        # Convergence check
+        if b_square < tol: 
+            break
+
+        # Compute next vector
+        next_phi = H_phi - a*phi - b_square*prev_phi        
+        prev_phi = phi
+        prev_phi_phi = phi_phi
+        phi = next_phi
+    
+    b_list[0] = b0
+    def green(z):
+        cont_frac = z - a_list[-1]
+        for a,b in zip(reversed(a_list[:-1]),reversed(b_list[1:])):
+            cont_frac = z - a - b*b/cont_frac
+        cont_frac = b_list[0]**2/cont_frac
+        return cont_frac
+
     return green

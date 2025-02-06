@@ -1,8 +1,11 @@
 import numpy as np
-from scipy.linalg import eig   
+from scipy.linalg import eig
 import pytest
 from liteczos.lanczos import get_ground_state, get_green_function
+from liteczos import twosites
+from test_twosites import t, U
 
+## random matrices for tests
 H2x2 = np.array(
     [[-0.09632342, -0.93660398],
      [-0.93660398,  3.73596509]]
@@ -27,13 +30,16 @@ H16x16 = np.array([
     [-2.15485695,  1.58008006, -0.40891196,  0.09134119,  2.81217775,  0.30315493,  1.30594053, -1.59147909,  0.19704743, -0.64377993,  1.61143456, -1.48487055,  1.44579798, -2.06423957, -0.16603588, -2.94753416]
 ])
 
+
 @pytest.fixture(
     name="H",
     params=[H2x2, H16x16],
     ids=["2x2", "16x16"]
 )
 def H(request):
+    
     return request.param
+
 
 @pytest.fixture(
     name="omega",
@@ -43,6 +49,7 @@ def H(request):
 def omega(request):
     return request.param
 
+
 @pytest.fixture(
     name="eta",
     params=[.1, np.linspace(.1, .3, 4)],
@@ -50,6 +57,7 @@ def omega(request):
 )
 def eta(request):
     return request.param
+
 
 @pytest.fixture(
     name="mu",
@@ -74,7 +82,18 @@ def test_ground_state_vector(H):
     assert np.allclose(v0, expected_v0) or np.allclose(v0, -expected_v0)
 
 
-def test_green_function(omega, eta, mu):
-    expected_green = lambda omega, eta, mu: 1/(omega + 1j*eta - mu)
-    green = get_green_function()
-    assert np.allclose(green(omega, eta, mu), expected_green(omega, eta, mu))
+def test_ground_state_twosites(t, U):
+    H = twosites.hamiltonian(t, U)
+    expected_e0 = twosites.ground_state_energy(t, U)
+    e0, v0 = get_ground_state(H)
+    assert np.allclose(e0, expected_e0)
+    assert np.allclose(H@v0/expected_e0, v0)
+
+
+def test_green_function(omega, eta, t, U):
+    expected_green = twosites.get_green_function(t, U) 
+    H = twosites.hamiltonian(t, U)
+    green = get_green_function(H)
+    mu = U/2
+    assert np.allclose(green(omega+1j*eta-mu), expected_green(omega+1j*eta))
+
