@@ -69,16 +69,16 @@ def mu(request):
 
 
 def test_ground_state_energy(H):
-    eigvals, _ = eig(H)
+    eigvals, eigvecs = eig(H)
     expected_e0 = eigvals.min() 
-    e0, _ = get_ground_state(H)    
+    e0, v0 = get_ground_state(H)    
     assert np.allclose(e0, expected_e0)
 
 
 def test_ground_state_vector(H):
     eigvals, eigvecs = eig(H)
     expected_v0 = eigvecs[:, eigvals.argmin()]
-    _, v0 = get_ground_state(H)    
+    e0, v0 = get_ground_state(H)    
     assert np.allclose(v0, expected_v0) or np.allclose(v0, -expected_v0)
 
 
@@ -94,5 +94,6 @@ def test_green_function(omega, eta, t, U):
     expected_green = twosites.get_green_function(t, U) 
     H = twosites.hamiltonian(t, U)
     green = get_green_function(H)
-    assert np.allclose(green(omega+1j*eta-U/2), expected_green(omega+1j*eta))
+    mu = U/2
+    assert np.allclose(green(omega+1j*eta-mu), expected_green(omega+1j*eta))
 
