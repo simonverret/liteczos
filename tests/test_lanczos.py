@@ -3,14 +3,13 @@ from scipy.linalg import eig
 import pytest
 from liteczos.lanczos import get_ground_state, get_green_function
 from liteczos import twosites
-from test_twosites import mu_half, t, U
+from test_twosites import t, U
 
-
+## random matrices for tests
 H2x2 = np.array(
     [[-0.09632342, -0.93660398],
      [-0.93660398,  3.73596509]]
 )
-
 
 H16x16 = np.array([
     [-1.3894775 , -1.19471433,  1.99407897,  0.53557267,  0.98367845, -2.62844458,  2.65080982,  0.22244433,  0.14959715, -2.29061152,  0.86372551,  0.82224996,  0.07320181,  1.31539523, -1.95830912, -2.15485695],
@@ -70,28 +69,30 @@ def mu(request):
 
 
 def test_ground_state_energy(H):
-    eigvals, eigvecs = eig(H)
+    eigvals, _ = eig(H)
     expected_e0 = eigvals.min() 
-    e0, v0 = get_ground_state(H)    
+    e0, _ = get_ground_state(H)    
     assert np.allclose(e0, expected_e0)
 
 
 def test_ground_state_vector(H):
     eigvals, eigvecs = eig(H)
     expected_v0 = eigvecs[:, eigvals.argmin()]
-    e0, v0 = get_ground_state(H)    
+    _, v0 = get_ground_state(H)    
     assert np.allclose(v0, expected_v0) or np.allclose(v0, -expected_v0)
 
 
-def test_ground_state_twosites(mu_half, t, U):
-    H = twosites.hamiltonian(t, U) - mu_half*twosites.number()
-    expected_e0 = twosites.ground_state_energy(t, U) - mu_half*2
+def test_ground_state_twosites(t, U):
+    H = twosites.hamiltonian(t, U)
+    expected_e0 = twosites.ground_state_energy(t, U)
     e0, v0 = get_ground_state(H)
     assert np.allclose(e0, expected_e0)
     assert np.allclose(H@v0/expected_e0, v0)
 
 
-def test_green_function(omega, eta, mu):
-    expected_green = lambda omega, eta, mu: 1/(omega + 1j*eta - mu)
-    green = get_green_function()
-    assert np.allclose(green(omega, eta, mu), expected_green(omega, eta, mu))
+def test_green_function(omega, eta, t, U):
+    expected_green = twosites.get_green_function(t, U) 
+    H = twosites.hamiltonian(t, U)
+    green = get_green_function(H)
+    assert np.allclose(green(omega+1j*eta-U/2), expected_green(omega+1j*eta))
+

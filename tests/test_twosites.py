@@ -1,13 +1,7 @@
 import pytest
 import numpy as np
-from scipy.linalg import eigvalsh
-from liteczos.twosites import (
-    hamiltonian, 
-    number, 
-    ground_state_energy, 
-    ground_state_vector,
-    get_green_function,
-)
+from scipy.linalg import eigvalsh, inv
+from liteczos.twosites import *
 
 
 @pytest.fixture(
@@ -28,32 +22,40 @@ def U(request):
     return request.param
 
 
-@pytest.fixture
-def mu_half(U):
-    return U/2
-
-
 def test_hamiltonian(t, U):
     H = hamiltonian(t, U)
     assert H.shape == (16,16)
 
 
-def test_ground_state_energy(mu_half, t, U):
-    H = hamiltonian(t, U) - mu_half*number()    
+def test_ground_state_energy(t, U):
+    H = hamiltonian(t, U)    
     expected_e0 = eigvalsh(H).min()
-    e0 = ground_state_energy(t, U) - mu_half*2
+    e0 = ground_state_energy(t, U)
     assert np.allclose(e0, expected_e0)
 
 
-def test_ground_state_vector(mu_half, t, U):
-    H = hamiltonian(t, U) - mu_half*number()
+def test_ground_state_vector(t, U):
+    H = hamiltonian(t, U)
     expected_e0 = eigvalsh(H).min()    
     v0 = ground_state_vector(t, U)
     assert np.allclose((H@v0)/expected_e0, v0)
 
 
-def test_green_function(mu_half, t, U):
-    gf = get_green_function(mu_half, t, U)
-    assert callable(gf)
-    assert gf(0+0.01j).shape == (4,4)
+def test_cdag1up(t,U):
+    v0 = ground_state_vector(t, U)
+    v1 = cdag1up() @ v0
+    a, b = get_alpha_beta(t,U)
+    expected_v1 = np.zeros(16)
+    expected_v1[13] = a
+    expected_v1[14] = b
+    assert np.allclose(v1, expected_v1)
 
+
+# def test_green_function(t, U):
+#     gf = get_green_function(t, U)
+#     assert callable(gf)
+
+#     cdag1u_gs = cdag1up() @ ground_state_vector(t,U)
+#     H = hamiltonian(t, U)
+#     expected_gf = lambda z: cdag1u_gs @ inv(z*np.eye(16) - H) @ cdag1u_gs
+#     assert gf(0+1j*0.1) == expected_gf(0+1j*0.1)
